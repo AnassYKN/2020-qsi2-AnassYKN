@@ -65,10 +65,48 @@ describe("Troll Analogy", ({test}) => {
 });
 
 describe("Troll Idempotence", ({test}) => {
-  test(
-    "all_elves_of_a_kind_resurrected brings the Troll killing list to a stable state",
-    ({expect}) => {
-    /* Test go there */
+  test("all_elves_of_a_kind_resurrected brings the Troll killing list to a stable state",({expect}) => {
+      QCheck.Test.make(
+        ~count=1000,
+        ~name="all_elves_of_a_kind_resurrected brings the Troll killing list to a stable state",
+        troll_elf_arbitrary,
+        ((troll, elf)) => {
+            (scoring(all_elves_resurrected(troll))) == (scoring((all_elves_of_a_kind_resurrected(elf,troll))))
+          }
+      )
+      |> expect.ext.qCheckTest;
     ()
+  })
+});
+
+describe("Troll Metamophism", ({test}) => {
+  test("Verify that the execution of a function with variants of the same input must lead to equal outputs",({expect}) => {
+      QCheck.Test.make(
+        ~count=1000,
+        ~name="Verify that the execution of a function with variants of the same input must lead to equal outputs",
+        troll_elf_arbitrary,
+        ((troll, elf)) => {
+          scoring(troll) <= scoring(i_got_one(elf, troll));
+        }
+      ) |> expect.ext.qCheckTest;
+      ();
+  })
+});
+
+
+describe("Troll Injection", ({test}) => {
+  test("check the diffrent inputs lead to different outputs",({expect}) => {
+    QCheck.Test.make(
+      ~count=1000,
+      ~name="check the diffrent inputs lead to different outputs",
+      troll_two_elves_arbitrary,
+      ((troll, elf_X, elf_Y)) =>
+      {
+        if( elf_X == elf_Y){i_got_one(elf_X, troll) == i_got_one(elf_Y, troll);}
+        else {              i_got_one(elf_X, troll) != i_got_one(elf_Y, troll);}
+      }
+    )
+    |> expect.ext.qCheckTest;
+    ();
   })
 });
